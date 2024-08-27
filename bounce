@@ -1,0 +1,288 @@
+//gl deciphering. Pretty simple but all over the place. This is ancient but functions well and accurately fwiw
+
+const bellatorScyP2 = 0.6603; 
+const bellatorScyRed = 0.9048; 
+const bellatorMax = [49, 24, 12];
+
+const bellatorClawP2 = 0.5374;
+const bellatorClawMax = 45;
+
+const bellatorChallyP2 = 0.6391;
+const bellatorChallyMax = 66;
+
+const bellatorSotdAcc = 0.6047;
+const bellatorSotdMax = 50;
+
+const bellatorSwiftAcc = 0.4312;
+const bellatorSwiftMax = 32;
+
+const ultorScyP2 = 0.6315; 
+const ultorScyRed = 0.9008; 
+const ultorMax = [51, 25, 12];
+
+
+const ultorClawP2 = 0.4829;
+const ultorClawMax = 46;
+
+const ultorChallyP2 = 0.6065;
+const ultorChallyMax = 67;
+
+const ultorSotdAcc = 0.5651;
+const ultorSotdMax = 51;
+
+const ultorSwiftAcc = 0.3737;
+const ultorSwiftMax = 34;
+
+const shadowAcc = .8485;
+const shadowMacc = 66;
+
+const OTM = true; //roll 1-1-max instead of 0-max
+const ultorOnly = !true;
+
+
+const scySwing = (acc, max, size = 3) => {
+  let damage = 0;
+  if (OTM) {
+    if (Math.random() <= acc) {
+      let hit = Math.floor(Math.random() * (max[0]+1));
+      if (hit === 0) {
+        hit = 1
+      }
+      damage += hit
+    }
+    if (Math.random() <= acc) {
+      let hit2 = Math.floor(Math.random() * max[1]+1);
+      if (hit2 === 0) {
+        hit2 = 1
+      }
+      damage += hit2;
+    }
+    if (Math.random() <= acc && size > 2) {
+      let hit3 = Math.floor(Math.random() * max[2]+1);
+      if (hit3 === 0) {
+        hit3 = 1
+      }
+      damage += hit3;
+    }
+  }
+  else if(!OTM){
+    if (Math.random() <= acc) {
+    damage += Math.floor(Math.random() * (max[0] + 1));
+    }
+    if (Math.random() <= acc) {
+      damage += Math.floor(Math.random() * (max[1] + 1));
+    }
+    if (Math.random() <= acc && size > 2) {
+      damage += Math.floor(Math.random() * (max[2] + 1));
+    }
+  }
+
+  return damage;
+};
+
+const challySpec = (acc, max) => {
+  let damage = 0;
+  const secondAcc = acc * 0.75;
+  if (OTM) {
+    if (Math.random() <= acc) {
+      let hit = Math.floor(Math.random() * (max+1));
+      if (hit === 0) {
+        hit=1;
+      }
+      damage += hit;
+    }
+    if (Math.random() <= secondAcc) {
+      let hit = Math.floor(Math.random() * (max+1));
+      if (hit === 0) {
+        hit=1;
+      }
+      damage += hit;
+    }
+  }
+  else if (!OTM) {
+    if (Math.random() <= acc) {
+    damage += Math.floor(Math.random() * (max + 1));
+    }
+    if (Math.random() <= secondAcc) {
+    damage += Math.floor(Math.random() * (max + 1));
+    }
+
+    return damage
+  }
+
+  return damage;
+};
+
+const clawSpec = (acc, max) => {
+  let damage = 0;
+  //first roll
+  if (Math.random() <= acc) {
+    let newMax = max - 1;
+    const hit = Math.floor(
+      Math.random() * (newMax - Math.floor(max / 2) + 1) + Math.floor(max / 2)
+    );
+    damage += hit; //first
+    damage += Math.floor(hit / 2); //second
+    damage += 2 * Math.floor(Math.floor(hit / 2) / 2); //third & 4th
+    damage += Math.random() < 0.5 ? 1 : 0; //extra
+  }
+  //second roll
+  else if (damage === 0 && Math.random() <= acc) {
+    const hit = Math.floor(
+      Math.random() *
+        (Math.floor((max * 7) / 8) - Math.floor((max * 3) / 8 + 1)) +
+        Math.floor((3 / 8) * max)
+    );
+    damage += hit; //first
+    damage += 2 * Math.floor(hit / 2); //second & third
+    damage += Math.random() < 0.5 ? 1 : 0; //extra
+  }
+  //third roll
+  else if (damage === 0 && Math.random() <= acc) {
+    const hit = Math.floor(
+      Math.random() *
+        (Math.floor((max * 3) / 4) - Math.floor((max * 1) / 4) + 1) +
+        Math.floor((1 / 4) * max)
+    );
+    damage += 2 * hit; //first & second
+    damage += Math.random() < 0.5 ? 1 : 0; //extra
+  }
+  //fourth roll
+  else if (damage === 0 && Math.random() <= acc) {
+    const hit = Math.floor(
+      Math.random() *
+        (Math.floor((max * 5) / 4) - Math.floor((max * 1) / 4) + 1) +
+        Math.floor((max * 1) / 4)
+    );
+    damage = hit;
+  }
+  //fifth roll
+  else if (damage === 0 && Math.random() <= 0.5) {
+    damage += 2;
+  }
+  return damage;
+};
+
+const normAtt = (acc, max) => {
+  let damage = 0;
+  if (OTM) {
+    if (Math.random() <= acc) {
+      let hit = Math.floor(Math.random() * (max + 1))
+      if (hit === 0) {
+        hit++;
+      }
+      damage += hit;
+    }
+  } else {
+    if (Math.random() <= acc) {
+      damage += Math.floor(Math.random() * (max + 1));
+    }
+  }
+  return damage;
+};
+
+
+const redSkip = (start) => {
+  let verzHP = Math.floor(3062 * start);
+  let eastHP = 175;
+  let westHP = 175;
+  let swings = 23;
+  let claws = 4;
+  let chally = 0;
+  let hitCrabs = !true // true = hit crabs (killed purple), !true = ignoreCrabs (left purple alive)
+
+  let randomNum = Math.floor(Math.random() * 5)
+
+  // reds
+  if (hitCrabs) {
+    for (let i = 0; i < 4; i++) {
+      eastHP -= scySwing(ultorScyRed, ultorMax, 2);
+      westHP -= scySwing(ultorScyRed, ultorMax, 2);
+    }
+  }
+
+  // if dont need to 5t, scy verz
+  if (hitCrabs) {
+    if (eastHP >= 35) {
+      eastHP -= scySwing(ultorScyRed, ultorMax, 2);
+    } else {
+      if (Math.random() < 0.25) {
+        if (ultorOnly) {
+          verzHP -= normAtt(ultorClawP2, ultorClawMax)
+        } else {
+          verzHP -= normAtt(bellatorClawP2, bellatorClawMax)
+        }
+      } else {
+        swings++;
+      }
+    }
+    if (westHP >= 35) {
+      westHP -= scySwing(ultorScyRed, ultorMax, 2);
+    } else {
+        if (Math.random() < 0.25) {
+          if (ultorOnly) {
+            verzHP -= normAtt(ultorClawP2, ultorClawMax);
+          } else {
+            verzHP -= normAtt(bellatorClawP2, bellatorClawMax);
+          }
+        } else {
+          swings++;
+        }
+    }
+  }
+
+  // crabs healing
+  if (hitCrabs) {
+    if (eastHP > 0) {
+      verzHP += eastHP;
+    }
+    if (westHP > 0) {
+      verzHP += westHP;
+    }
+  }
+
+  // verz
+  for (let h = 0; h < 6; h++) {
+    if (Math.random() <= 0.75) {
+      verzHP += Math.floor(Math.floor(Math.floor(Math.random() * 48) / 2) / 2);
+    } else {
+      randomNum--;
+      if (randomNum = 0) {
+        verzHP -= Math.floor(Math.random() * 6) + 20 //20-25
+        randomNum = 4;
+      }
+    }
+  }
+
+  //scythes
+  for (let i = 0; i < swings; i++) {
+    verzHP -= scySwing(ultorOnly ? ultorScyP2 : bellatorScyP2, ultorOnly ? ultorMax : bellatorMax);
+  }
+  //claw specs
+  for (let i = 0; i < claws; i++) {
+    verzHP -= clawSpec(ultorOnly ? ultorClawP2 : bellatorClawP2, ultorOnly ? ultorClawMax : bellatorClawMax);
+  }
+  //chally
+  for (let i = 0; i < chally; i++) {
+    verzHP -= challySpec(ultorOnly ? ultorChallyP2 : bellatorChallyP2, ultorOnly ? ultorChallyMax : bellatorChallyMax);
+  }
+  //thralls
+  for (let t = 0; t < 32; t++) {
+    verzHP -= Math.floor(Math.random() * 4);
+  }
+
+  return verzHP <= 0;
+};
+
+for (let hp = 350; hp >= 260; hp -= 5) {
+    let skips = 0;
+    let attempts = 1000000;
+
+    for (let i = 0; i < attempts; i++) {
+        if (redSkip(hp / 1000)) {
+            skips++
+        }
+    }
+
+    console.log(`Starting HP = ${hp/10}% | skips odds = ${(skips / attempts * 100).toFixed(2)}%`)
+}
